@@ -15,7 +15,7 @@
 ## Content
 
 1. [Dependencies](#Dependencies)
-1. [Diffusion Models](#Diffusion Models)
+1. [Diffusion](#Diffusion)
 1. [Dataset](#Dataset)
 1. [Evaluation](#Evaluation)
 1. [Training](#Training)
@@ -29,7 +29,7 @@
 - transformers 4.30.2
 - mpi4py  3.0.1
 
-## Diffusion Models
+## Diffusion
 
 Get the weights of our trained diffusion model [link](https://drive.google.com/drive/folders/1B_BsN0lxGoRb0XOA9wo-EH8ipqAVvdWg?usp=sharing) and into  `./Diffusion-LM/diffusion_models`
 
