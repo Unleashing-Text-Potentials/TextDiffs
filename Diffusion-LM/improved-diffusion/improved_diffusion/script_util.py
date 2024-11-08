@@ -24,7 +24,7 @@ def model_and_diffusion_defaults():
         learn_sigma=False,
         sigma_small=False,
         class_cond=False,
-        diffusion_steps=1000,
+        diffusion_steps=10,
         noise_schedule="linear",
         timestep_respacing="",
         use_kl=False,

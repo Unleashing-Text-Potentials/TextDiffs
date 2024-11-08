@@ -24,7 +24,7 @@ class DataFactory:
                 dataset = MSRVTTDataset(config, split_type, test_img_tfms)
                 return DataLoader(dataset, batch_size=config.batch_size,
                            shuffle=False, num_workers=config.num_workers)
-        elif config.dataset_name == "ActivtyNet":
+        elif config.dataset_name == "ActivityNet":
             if split_type == 'train':
                 dataset = ActivityNet_DataLoader(config, split_type, train_img_tfms)
                 return DataLoader(dataset, batch_size=config.batch_size,
@@ -33,17 +33,7 @@ class DataFactory:
                 dataset = ActivityNet_DataLoader(config, split_type, test_img_tfms)
                 return DataLoader(dataset, batch_size=config.batch_size,
                         shuffle=False, num_workers=config.num_workers)    
-        
-
-        elif config.dataset_name == "MSVD":
-            if split_type == 'train':
-                dataset = MSVDDataset(config, split_type, train_img_tfms)
-                return DataLoader(dataset, batch_size=config.batch_size,
-                        shuffle=True, num_workers=config.num_workers)
-            else:
-                dataset = MSVDDataset(config, split_type, test_img_tfms)
-                return DataLoader(dataset, batch_size=config.batch_size,
-                        shuffle=False, num_workers=config.num_workers)    
+          
         elif config.dataset_name == 'LSMDC':
             if split_type == 'train':
                 dataset = LSMDCDataset(config, split_type, train_img_tfms)
@@ -55,16 +45,6 @@ class DataFactory:
                             shuffle=False, num_workers=config.num_workers)
 
         elif config.dataset_name == "DiDeMo":
-            if split_type == 'train':
-                dataset = DiDeMoDataset(config, split_type, train_img_tfms)
-                shuffle = True
-                return DataLoader(dataset, batch_size=config.batch_size, shuffle=shuffle, num_workers=config.num_workers)
-            else:
-                dataset = DiDeMoDataset(config, split_type, test_img_tfms)
-                shuffle = False
-                return DataLoader(dataset, batch_size=config.batch_size, shuffle=shuffle, num_workers=config.num_workers)
-            
-        elif config.dataset_name == "ActivityNet":
             if split_type == 'train':
                 dataset = DiDeMoDataset(config, split_type, train_img_tfms)
                 shuffle = True

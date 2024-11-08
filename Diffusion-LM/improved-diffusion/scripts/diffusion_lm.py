@@ -31,14 +31,11 @@ class run_diffusion(nn.Module):
 
         self.args, _ = create_argparser().parse_known_args()
 
-        current_path = os.getcwd()
-
         "------------------------------teacher---------------------------------------------"
         self.args.checkpoint_path = "Diffusion-LM/diffusion_models"
         self.args.model_arch = "transformer"
         self.args.modality = "e2e-tgt" 
         self.ave_interval = 50000  
-        self.args.diffusion_steps = 10
         self.args.noise_schedule = "sqrt"  
         self.args.use_kl = False 
         self.args.learn_sigma = False  
@@ -87,8 +84,6 @@ class run_diffusion(nn.Module):
             )
         
         "---------------------------student-------------------------------------------------"
-
-        self.args.diffusion_steps = 10
         self.student_model, self.student_diffusion = create_model_and_diffusion(
             **args_to_dict(self.args, model_and_diffusion_defaults().keys())
         )

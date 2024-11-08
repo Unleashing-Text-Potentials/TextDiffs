@@ -79,6 +79,7 @@ class AllConfig(Config):
         parser.add_argument('--num_epochs', type=int, default=5)
         parser.add_argument('--weight_decay', type=float, default=0.2, help='Weight decay')
         parser.add_argument('--warmup_proportion', type=float, default=0.1, help='Warmup proportion for learning rate schedule')
+        parser.add_argument('--diffusion_steps', type=int, default=10)
 
         # frame pooling parameters
         parser.add_argument('--pooling_type', type=str)
@@ -119,7 +120,7 @@ class AllConfig(Config):
             date_time = args.datetime
 
         lr = args.noclip_lr
-        args.model_path = os.path.join(args.output_dir, args.exp_name, str(date_time) + str(lr) )
+        args.model_path = os.path.join(args.output_dir, args.exp_name, str(date_time) +"_"+str(lr) )
         # args.model_path = os.path.join(args.output_dir, args.exp_name, date_time)
         print('>>>args.model_path', args.model_path)
 

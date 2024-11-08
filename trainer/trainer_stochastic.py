@@ -144,10 +144,6 @@ class Trainer(BaseTrainer):
 
                 data['video'] = data['video'].to(self.device)
 
-                # for key in data:
-                #     print( key )
-                #     print( data[key] )  video_id , text , video , raw_text
-
                 text_embed, vid_embed, vid_embed_pooled, text_embed_stochastic = self.model(data, return_all_frames=True, is_train=False)
 
                 text_embed_arr.append(text_embed.cpu())
@@ -157,7 +153,6 @@ class Trainer(BaseTrainer):
 
                 for v_id in data['video_id']:
                     all_vid_ids.append(v_id) 
-                    #video_id , video , text
 
             text_embeds = torch.cat(text_embed_arr)
             vid_embeds = torch.cat(vid_embed_arr)

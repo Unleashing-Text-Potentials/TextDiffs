@@ -52,13 +52,12 @@ class LinearCosRadius(nn.Module):
 
         video_embeds = self.linear_text( video_embeds )
 
-        # 运行路径为 10-teacher-diff-tmass/Diffusion-LM/improved-diffusion/scripts/diffusion_lm.py
+        # run in  Diffusion-LM/improved-diffusion/scripts/diffusion_lm.py
         if stage == "Train":
             sims_out , target_loss = self.run_diffusion( video_embeds , diff_data , stage )
         if stage == "Test":
             sims_out = self.run_diffusion( video_embeds , diff_data , stage )
         
-        # print( sims_out.size() ) 32*64*16
         sims_out = self.linear_sims( sims_out )  #32*64*512
         sims_out = sims_out.permute(0,2,1)   #32*512*64
         sims_out = self.linear_sims_sum( sims_out ).squeeze(2)   #32*512
