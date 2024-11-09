@@ -60,7 +60,7 @@ class AllConfig(Config):
         parser.add_argument('--output_dir', type=str, default='./outputs')
         parser.add_argument('--save_every', type=int, default=1, help="Save model every n epochs")
         parser.add_argument('--log_step', type=int, default=10, help="Print training log every n steps")
-        parser.add_argument('--evals_per_epoch', type=int, default=1, help="Number of times to evaluate per epoch")
+        parser.add_argument('--evals_per_epoch', type=int, default=3, help="Number of times to evaluate per epoch")
         parser.add_argument('--load_epoch', type=int, help="Epoch to load from exp_name, or -1 to load model_best.pth")
         parser.add_argument('--eval_window_size', type=int, default=5, help="Size of window to average metrics")
         parser.add_argument('--metric', type=str, default='t2v', help="'t2v'/'v2t'")
