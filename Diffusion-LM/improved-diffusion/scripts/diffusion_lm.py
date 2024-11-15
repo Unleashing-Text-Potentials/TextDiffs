@@ -130,7 +130,7 @@ class run_diffusion(nn.Module):
                     model2, tokenizer = load_models(args.modality, args.experiment, args.model_name_or_path, args.in_channel,
                                                     args.checkpoint_path, extra_args=args)
                     model3 = get_weights(model2, args)
-                    print(model3, model3.weight.requires_grad)
+                    # print(model3, model3.weight.requires_grad)
                     mapping_func = partial(compute_logp, args, model3.cuda())
                     diffusion.mapping_func = mapping_func
                     return mapping_func
