@@ -7,8 +7,7 @@ from datasets.data_factory import DataFactory
 from model.model_factory import ModelFactory
 from modules.metrics import t2v_metrics, v2t_metrics
 from modules.loss import LossFactory
-from trainer.trainer_stochastic import Trainer
-from config.all_config import gen_log
+from trainer.trainer import Trainer
 
 # @WJM: solve num_workers
 import torch.multiprocessing
@@ -28,11 +27,6 @@ def main():
         torch.backends.cudnn.benchmark = True
         if not torch.cuda.is_available():
             raise Exception('NO GPU!')
-
-    # @WJM: add log
-    msg = f'model pth = {config.model_path}'
-    gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-    gen_log(model_path=config.model_path, log_name='log_trntst', msg='record all training and testing results')
 
     # seed
     if config.seed >= 0:

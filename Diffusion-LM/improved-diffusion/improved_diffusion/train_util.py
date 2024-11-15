@@ -100,7 +100,5 @@ class TrainLoop:
                 only_sims = only_sims , 
                 model_kwargs=micro_cond,
             )
-            # 扩散模型位置：/data/yangsijie/2024-10/10-teacher-diff-tmass/Diffusion-LM/improved-diffusion/improved_diffusion/gaussian_diffusion.py
-            # 解码模型位置：/data/yangsijie/2024-10/10-teacher-diff-tmass/Diffusion-LM/improved-diffusion/improved_diffusion/transformer_model2.py
 
             return sims_out

@@ -52,6 +52,7 @@ class run_diffusion(nn.Module):
         self.args.training_mode = "e2e" 
         self.args.vocab_size = 821  
         self.args.e2e_train = "../datasets/e2e_data"
+        # print( self.args.diffusion_steps )
 
         self.teacher_model, self.teacher_diffusion = create_model_and_diffusion(
             **args_to_dict(self.args, model_and_diffusion_defaults().keys())
@@ -60,7 +61,7 @@ class run_diffusion(nn.Module):
 
         state_dict  =torch.load("Diffusion-LM/diffusion_models/ema_0.9999_200000.pt")
         model_dict = self.teacher_model.state_dict()
-        # 只更新匹配的键值对
+
         matched_dict = {k: v for k, v in state_dict.items() if k in model_dict}
         model_dict.update(matched_dict)
         self.teacher_model.load_state_dict(model_dict)

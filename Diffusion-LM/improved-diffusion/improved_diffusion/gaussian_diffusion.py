@@ -238,7 +238,6 @@ class GaussianDiffusion:
     def training_losses(self, model, *args, **kwargs):
         if self.training_mode == 'e2e':
             return self.training_losses_e2e(model, *args, **kwargs)
-        # 将其余没有运行的已经删除
 
     def calc_bpd_loop(self, model, *args, **kwargs):
         if self.training_mode == 'e2e':
@@ -1387,8 +1386,6 @@ class GaussianDiffusion:
         video_feature = video_feature / video_feature.norm(dim=-1, keepdim=True)
         emb_inputs = x_start / x_start.norm(dim=-1, keepdim=True)
         sims = th.matmul(emb_inputs, video_feature.permute(0,2,1) )
-        # 得到 文本每个单词与video-guidence
-        # 维度32*64*12    每个句子64个文本 ，视频有12帧
 
         if only_sims ==True:
             return sims
@@ -1398,23 +1395,6 @@ class GaussianDiffusion:
         if self.loss_type == LossType.E2E_MSE or self.loss_type == LossType.E2E_RESCALED_MSE:
             # print(x_t.size() ) 64*64*16
             model_output = model(x_t, self._scale_timesteps(t), y =sims, **model_kwargs)
-            # print( self.model_var_type ) ModelVarType.FIXED_LARGE
-
-            # target = {
-            #     ModelMeanType.PREVIOUS_X: self.q_posterior_mean_variance(
-            #         x_start=x_start, x_t=x_t, t=t
-            #     )[0],
-            #     ModelMeanType.START_X: x_start,
-            #     ModelMeanType.EPSILON: noise,
-            # }[self.model_mean_type]
-            # assert model_output.shape == target.shape == x_start.shape
-            # terms["mse"] = mean_flat((target - model_output) ** 2)
-            # model_out_x_start = self.x0_helper(model_output, x_t, t)['pred_xstart']  #这里由于ModelVarType.FIXED_LARGE，导致返回结果就是model_output，感觉不太适合
-            # t0_mask = (t == 0)
-            # t0_loss = mean_flat((x_start_mean - model_out_x_start) ** 2)
-            # # print(terms["mse"].shape, )
-            # terms["mse"] = th.where(t0_mask, t0_loss, terms["mse"])
-            # 使用 mean_flat 作为后面teacher-student的损失函数
 
         return model_output
 

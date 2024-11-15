@@ -6,28 +6,6 @@ from modules.basic_utils import mkdirp, deletedir
 import time
 import numpy as np
 import datetime
-import logging
-
-def gen_log(model_path, msg, log_name):
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s: %(message)s")
-
-    log_file = model_path + '/'+ log_name + '.txt'
-    fh = logging.FileHandler(log_file, mode='a')
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(formatter)
-
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    ch.setFormatter(formatter)
-
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    logger.info(msg)
-    logger.removeHandler(fh)
-    logger.removeHandler(ch)
-    # return logger
 
 class AllConfig(Config):
     def __init__(self):

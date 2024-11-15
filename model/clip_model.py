@@ -1,7 +1,7 @@
 import torch.nn as nn
 from config.base_config import Config
 from modules.transformer import Transformer
-from modules.stochastic_module import StochasticText
+from modules.textdiffs_module import TextDiffs
 
 class CLIPTextDiffs(nn.Module):
     def __init__(self, config: Config):
@@ -19,7 +19,7 @@ class CLIPTextDiffs(nn.Module):
 
         config.pooling_type = 'transformer'
         self.pool_frames = Transformer(config)
-        self.stochastic = StochasticText(config)
+        self.textdiffs = TextDiffs(config)
 
 
     def forward(self, data, return_all_frames=False, is_train=True):
@@ -38,13 +38,13 @@ class CLIPTextDiffs(nn.Module):
 
             video_features_pooled = self.pool_frames(text_features, video_features)
 
-            text_features_stochstic, text_mean, log_var , target_loss = self.stochastic(text_features, video_features , diff_data , 'Train')
+            text_features_diffs , target_loss = self.textdiffs(text_features, video_features , diff_data , 'Train')
 
 
             if return_all_frames:
-                return text_features, video_features, video_features_pooled, text_features_stochstic, text_mean, log_var , target_loss
+                return text_features, video_features, video_features_pooled, text_features_diffs, target_loss
 
-            return text_features, video_features_pooled,  text_features_stochstic, text_mean, log_var , target_loss
+            return text_features, video_features_pooled,  text_features_diffs, target_loss
 
         else:
 
@@ -56,10 +56,10 @@ class CLIPTextDiffs(nn.Module):
             video_features = video_features.reshape(batch_size, self.config.num_frames, -1)
             video_features_pooled = self.pool_frames(text_features, video_features)
 
-            text_features_stochstic, _, _ = self.stochastic(text_features, video_features , diff_data ,  'Test')
+            text_features_diffs, _= self.textdiffs(text_features, video_features , diff_data ,  'Test')
 
 
             if return_all_frames:
-                return text_features, video_features, video_features_pooled, text_features_stochstic
+                return text_features, video_features, video_features_pooled, text_features_diffs
 
-            return text_features, video_features_pooled, text_features_stochstic
+            return text_features, video_features_pooled, text_features_diffs

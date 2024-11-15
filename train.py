@@ -3,11 +3,10 @@ import torch
 import random
 import numpy as np
 from modules.loss import LossFactory
-from config.all_config import gen_log
 from config.all_config import AllConfig
 from datasets.data_factory import DataFactory
 from model.model_factory import ModelFactory
-from trainer.trainer_stochastic import Trainer
+from trainer.trainer import Trainer
 from modules.metrics import t2v_metrics, v2t_metrics
 from modules.optimization import AdamW, get_cosine_schedule_with_warmup
 
@@ -31,16 +30,6 @@ def main():
         torch.backends.cudnn.benchmark = True
         if not torch.cuda.is_available():
             raise Exception('NO GPU!')
-
-    # @WJM: add log
-    msg = f'model pth = {config.model_path}'
-    gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-    msg = f'\nconfig={config.__dict__}\n'
-    gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-    gen_log(model_path=config.model_path, log_name='log_trntst', msg='record all training and testing results')
-    gen_log(model_path=config.model_path, log_name='log_tot_loss', msg='Prepare to record loss values per batch ')
-    gen_log(model_path=config.model_path, log_name='log_ori_loss', msg='Prepare to record loss values per batch ')
-    gen_log(model_path=config.model_path, log_name='log_sup_loss', msg='Prepare to record loss values per batch ')
 
     # seed
     if config.seed >= 0:

@@ -2,7 +2,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import scipy.stats
-from config.all_config import gen_log
 import gc
 
 def np_softmax(X, theta = 1.0, axis = None):
@@ -63,143 +62,30 @@ def sim_matrix_training(text_embeds, vid_embeds_pooled, pooling_type):
     return sims
 
 
-def sim_matrix_inference_stochastic(text_embeds_per_video_id, vid_embeds_pooled_per_video_id, pooling_type):
+def sim_matrix_inference(text_embeds_diff_per_video_id, vid_embeds_pooled_per_video_id, pooling_type):
 
-    text_embeds_per_video_id = text_embeds_per_video_id / text_embeds_per_video_id.norm(dim=-1, keepdim=True)
-    vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id / vid_embeds_pooled_per_video_id.norm(dim=-1,
+        text_embeds_diff_per_video_id = text_embeds_diff_per_video_id / text_embeds_diff_per_video_id.norm(dim=-1, keepdim=True)
+        vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id / vid_embeds_pooled_per_video_id.norm(dim=-1,
                                                                                                           keepdim=True)
 
-    if pooling_type == 'avg':
-        print(f'for this case, have not tried')
-        raise NotImplementedError
-
-    else:
-        num_txts, num_vids, max_text_per_vid, embed_dim = text_embeds_per_video_id.shape
+        num_txts, num_vids, max_text_per_vid, embed_dim = text_embeds_diff_per_video_id.shape
 
         vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id.permute(1, 2, 3, 0)
         vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id.reshape(num_vids * max_text_per_vid, embed_dim,
                                                                                 num_vids)
-        text_embeds_per_video_id = text_embeds_per_video_id.permute(0, 2, 1, 3)
-        text_embeds_per_video_id = text_embeds_per_video_id.reshape(num_vids * max_text_per_vid, num_txts, embed_dim)
+        text_embeds_diff_per_video_id = text_embeds_diff_per_video_id.permute(0, 2, 1, 3)
+        text_embeds_diff_per_video_id = text_embeds_diff_per_video_id.reshape(num_vids * max_text_per_vid, num_txts, embed_dim)
 
 
-        sims = torch.bmm(text_embeds_per_video_id,
+        sims = torch.bmm(text_embeds_diff_per_video_id,
                          vid_embeds_pooled_per_video_id)
         sims = sims.view(num_vids, max_text_per_vid, num_txts, num_vids)
         sims_diag = torch.stack([sims[i, :, :, i] for i in range(sims.shape[0])],
                                 dim=-1)
-        print(f'>>>check sims_diag={sims_diag.shape}')
         sims_diag = sims_diag.permute(1, 0, 2)
+        return sims_diag
 
-    return sims_diag
-
-
-def sim_matrix_inference_stochastic_light_allops(text_embeds_per_video_id, vid_embeds_pooled_per_video_id, pooling_type,
-                                                 batch_size_split, config):
-
-    # @WJM: perform batch-wise torch.norm to save memory
-    text_embeds_per_video_id = text_embeds_per_video_id / text_embeds_per_video_id.norm(dim=-1, keepdim=True)
-
-    gen_log(model_path=config.model_path, log_name='log_trntst',
-            msg=f'text_embeds_per_video_id={text_embeds_per_video_id.shape}')
-
-    vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id / vid_embeds_pooled_per_video_id.norm(dim=-1,
-                                                                                                          keepdim=True)
-    gen_log(model_path=config.model_path, log_name='log_trntst',
-            msg=f'vid_embeds_pooled_per_video_id={vid_embeds_pooled_per_video_id.shape}')
-
-    if pooling_type == 'avg':
-
-        print(f'for this case, have not tried')
-        raise NotImplementedError
-
-    else:
-        num_vids, num_txts, max_text_per_vid, embed_dim = text_embeds_per_video_id.shape
-
-        vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id.permute(1, 2, 3, 0)
-        gen_log(model_path=config.model_path, log_name='log_trntst',
-                msg=f'after permute: vid_embeds_pooled_per_video_id={vid_embeds_pooled_per_video_id.shape}')
-
-
-        text_embeds_per_video_id = text_embeds_per_video_id.permute(0, 2, 1, 3)
-
-        msg = (f'>>>text_embeds_per_video_id={text_embeds_per_video_id.shape}')
-        gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-
-
-        # @WJM: exchange with batch-wise bmm
-        batch_size = text_embeds_per_video_id.shape[0]
-        if batch_size_split is None:
-            batch_size_split = 1
-        else:
-            pass
-        gen_log(model_path=config.model_path, log_name='log_trntst', msg=f'batch_size_split={batch_size_split}')
-
-        dim0, dim1, dim2, dim3 = text_embeds_per_video_id.shape
-        sims_diag = torch.zeros(dim1, dim0, dim2)
-        gen_log(model_path=config.model_path, log_name='log_trntst', msg=f'sims_diag={sims_diag.shape}')
-
-        for batch in range(0, batch_size, batch_size_split):
-            tensor1_batch = text_embeds_per_video_id[batch: min(batch + batch_size_split, batch_size)]
-            gen_log(model_path=config.model_path, log_name='log_trntst', msg=f'tensor1_batch={tensor1_batch.shape}')
-            tensor2_batch = vid_embeds_pooled_per_video_id[batch: min(batch + batch_size_split, batch_size)]
-            gen_log(model_path=config.model_path, log_name='log_trntst', msg=f'tensor2_batch={tensor2_batch.shape}')
-
-            # Perform batch-wise matrix multiplication
-            result_batch = torch.matmul(tensor1_batch, tensor2_batch)
-            msg = (f'batch={batch} result_batch={result_batch.shape}')
-            gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-
-            for idx in range(batch, min(batch + batch_size_split, batch_size)):
-                sims_diag[:, :, idx] = result_batch[idx - batch, :, :,
-                                       idx]
-
-        # @WJM: delete both input matrix to save memory
-        del text_embeds_per_video_id, vid_embeds_pooled_per_video_id
-        gc.collect()
-
-
-        msg = (f'>>>check sims_diag={sims_diag.shape}')
-        gen_log(model_path=config.model_path, log_name='log_trntst', msg=msg)
-
-        sims_diag = sims_diag.permute(1, 0, 2)
-
-    return sims_diag
-
-
-def generate_embeds_per_video_id_stochastic(text_embeds_stochastic_allpairs, vid_embeds_pooled, all_vid_ids,
-                                            pooling_type):
-    # Construct dictionary of text embeds per unique video id
-    if pooling_type == 'avg':
-        # num_vids x embed_dim
-        text_embeds_per_video_id = text_embeds_stochastic_allpairs
-
-    else:
-        # Construct dictionary of video embeds for each text per video_id
-        text_embeds_per_video_id = []
-
-        for i in range(text_embeds_stochastic_allpairs.shape[0]):
-            text_embeds_per_video_id.append({})
-            for idx, t_id in enumerate(all_vid_ids):
-                if t_id in text_embeds_per_video_id[i]:
-                    text_embeds_per_video_id[i][t_id].append(text_embeds_stochastic_allpairs[i, idx, :])
-                else:
-                    text_embeds_per_video_id[i][t_id] = [text_embeds_stochastic_allpairs[i, idx, :]]
-
-        for i in range(len(text_embeds_per_video_id)):
-            for t_id in text_embeds_per_video_id[i]:
-                text_embeds_per_video_id[i][t_id] = torch.stack(text_embeds_per_video_id[i][t_id])
-
-            text_embeds_per_video_id[i] = pad_and_stack_dict_to_tensor(text_embeds_per_video_id[i],
-                                                                       text_embeds_per_video_id[i].keys(),
-                                                                       text_embeds_stochastic_allpairs.shape[-1])
-
-        text_embeds_per_video_id = torch.stack(text_embeds_per_video_id)
-
-    if pooling_type == 'avg':
-        vid_embeds_pooled_per_video_id = vid_embeds_pooled
-
-    else:
+def vid_embeds_pooled_per_video_id_diff( vid_embeds_pooled , all_vid_ids):
         vid_embeds_pooled_per_video_id = []
 
         for i in range(vid_embeds_pooled.shape[0]):
@@ -217,8 +103,12 @@ def generate_embeds_per_video_id_stochastic(text_embeds_stochastic_allpairs, vid
             vid_embeds_pooled_per_video_id[i] = pad_and_stack_dict_to_tensor(vid_embeds_pooled_per_video_id[i],
                                                                              vid_embeds_pooled_per_video_id[i].keys(),
                                                                              vid_embeds_pooled.shape[-1])
-
-        vid_embeds_pooled_per_video_id = torch.stack(vid_embeds_pooled_per_video_id)
+        vid_embeds_pooled_per_video_id = torch.stack(vid_embeds_pooled_per_video_id)    
+        return vid_embeds_pooled_per_video_id
+def generate_embeds_per_video_id_diff(text_embeds_diff_allpairs, vid_embeds_pooled, all_vid_ids,
+                                            pooling_type):        
+    text_embeds_per_video_id = text_embeds_per_video_id_diff( text_embeds_diff_allpairs , all_vid_ids)
+    vid_embeds_pooled_per_video_id = vid_embeds_pooled_per_video_id_diff(vid_embeds_pooled , all_vid_ids)
 
     return text_embeds_per_video_id, vid_embeds_pooled_per_video_id
 
@@ -278,3 +168,24 @@ def pad_and_stack_dict_to_tensor(input, order, d=512):
     
     padded_stacked_input = torch.stack([padded_input[k] for k in order], dim = 0)
     return padded_stacked_input
+
+def text_embeds_per_video_id_diff(text_embeds_diff_allpairs , all_vid_ids):
+        text_embeds_per_video_id = []
+        for i in range(text_embeds_diff_allpairs.shape[0]):
+            text_embeds_per_video_id.append({})
+            for idx, t_id in enumerate(all_vid_ids):
+                if t_id in text_embeds_per_video_id[i]:
+                    text_embeds_per_video_id[i][t_id].append(text_embeds_diff_allpairs[i, idx, :])
+                else:
+                    text_embeds_per_video_id[i][t_id] = [text_embeds_diff_allpairs[i, idx, :]]
+
+        for i in range(len(text_embeds_per_video_id)):
+            for t_id in text_embeds_per_video_id[i]:
+                text_embeds_per_video_id[i][t_id] = torch.stack(text_embeds_per_video_id[i][t_id])
+
+            text_embeds_per_video_id[i] = pad_and_stack_dict_to_tensor(text_embeds_per_video_id[i],
+                                                                       text_embeds_per_video_id[i].keys(),
+                                                                       text_embeds_diff_allpairs.shape[-1])
+
+        text_embeds_per_video_id = torch.stack(text_embeds_per_video_id)
+        return text_embeds_per_video_id
