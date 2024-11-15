@@ -3,7 +3,6 @@ from datasets.model_transforms import init_transform_dict
 from datasets.msrvtt_dataset import MSRVTTDataset
 from datasets.lsmdc_dataset import LSMDCDataset
 from datasets.didemo_dataset import DiDeMoDataset
-from datasets.msvd_dataset import MSVDDataset
 from datasets.dataloader_activitynet_retrieval import ActivityNet_DataLoader
 from torch.utils.data import DataLoader
 

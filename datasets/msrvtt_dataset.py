@@ -34,7 +34,6 @@ class MSRVTTDataset(Dataset):
             self._construct_all_train_pairs()
         else:
             self.test_df = pd.read_csv(test_csv)
-            self.test_df = self.test_df[:100]
 
             
     def __getitem__(self, index):
